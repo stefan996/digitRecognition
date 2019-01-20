@@ -34,7 +34,7 @@ model.compile(optimizer = tf.train.AdamOptimizer(),
               metrics=['accuracy'])
 
 # train the model 
-model.fit(train_images, train_labels, epochs = 20)
+model.fit(train_images, train_labels, epochs = 50)
 # save the model
 model.save("../model/my_model.h5")
 
