@@ -1,15 +1,17 @@
-# build model and other function for neural network
 import keras
-from keras.models import load_model
 from keras.utils import CustomObjectScope
 from keras.initializers import glorot_uniform
+from keras.preprocessing import image
+from keras.preprocessing.image import img_to_array
+from keras.models import load_model
 
 # image processing 
+import numpy as np
+import matplotlib.pyplot as plt
 from PIL import Image
 from resizeimage import resizeimage
-import numpy as np
 from scipy.misc import imread, imsave
-import matplotlib.pyplot as plt
+import cv2 as cv
 
 # colored data in terminal
 from termcolor import colored
@@ -19,74 +21,70 @@ import warnings
 import os
 
 
-def binarization_image(original_image_path, binarized_image_path):
-        
-    # read original image
-    img = imread(original_image_path, mode = 'L')
-
-    # specify a threshold 0-255
-    threshold = 100
-
-    # make all pixels < threshold black
-    binarized = 1.0 * (img < threshold)
+def binarize(image_path):
     
-    # save the binarized image
-    imsave(binarized_image_path, binarized)
+    img = cv.imread(image_path, 0)
+    #img = cv.medianBlur(img, 5)
+    #blur = cv.GaussianBlur(img,(5,3),0)
+    #ret3,thresh2 = cv.threshold(blur, 0, 255,cv.THRESH_BINARY_INV + cv.THRESH_OTSU)
     
+    # make all pixels less than 128 black
+    ret, thresh = cv.threshold(img, 128, 255, cv.THRESH_BINARY_INV)
+    
+    imsave('binarizedImage.jpg', thresh)
 
-
-def prediction_image(image):
-     # load saved model
+    
+def predictionImage():
+    # remove warnins for compile model after loading
     with CustomObjectScope({'GlorotUniform': glorot_uniform()}):
-            model = load_model('../model/my_model.h5')
-
-    # expand dimension of picture
-    image = (np.expand_dims(image,0))
+        test_model = load_model('../model/best_model.h5')
     
-    # prediction image
-    predictions_single = model.predict(image)
-    prediction_result = np.argmax(predictions_single[0])
-    print(colored("Prediction: %s" % prediction_result, 'green'))
-     
+    
+    # open image on input path
+    with open('binarizedImage.jpg', 'r') as f:
+        with Image.open(f).convert('L') as image:
+            
+            # change size of binarized image to 28x28 pixels
+            resized_image = image.resize((28,28), Image.ANTIALIAS)
+            plt.imshow(resized_image)
+            plt.show()
+    
+            # convert image to array
+            x = img_to_array(resized_image)
+    
+            # add one dimension on image, [28, 28] -> [1, 28, 28]
+            x = np.expand_dims(x, axis = 0)
 
- 
+            # get predictions for all outputs(numbers)
+            predictions = test_model.predict_classes(x)
+            probabilities = test_model.predict_proba(x)
+            
+            # write data on output
+            print("Probabilities: " + str(probabilities))
+            print("Number is: " + str(predictions))
+
+            # remove image from disc
+            os.remove('binarizedImage.jpg')
+            
+            
 def main():
-    
     # remove warnings
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
     warnings.filterwarnings("ignore")
-    
-    # enter directory where we saved images
-    image_path = raw_input(colored("\nEnter folder path: \n", 'red'))
+        
+    # enter directory where is images
+    image_path = raw_input(colored("\nEnter image path: \n", 'red'))
     print(" ")
-   
-    # for image "num1.png" we get "num1Binarized.png"
-    lastPoint = image_path.rfind('.')
-    binarized_image_path = image_path[ : lastPoint] + "Binarized" + image_path[lastPoint : ]
-    binarization_image(image_path, binarized_image_path)
     
-    # open image on binarized_image_path
-    with open(binarized_image_path, 'r') as f:
-        with Image.open(f) as image:
-            # show image
-            print(colored('Processing image "{}".'.format(image_path), 'blue'))
-            plt.imshow(image)
-            plt.show()
-            
-            # change size of binarized image to 28x28 pixels
-            resized_image = resizeimage.resize_cover(image, [28, 28])
-            
-            # prediction processed image
-            prediction_image(resized_image)
-            
-            # remove binarized image from directory
-            os.remove(binarized_image_path)
-    
-    
+    # binarize image and predict digit
+    binarize(image_path)
+    predictionImage()
+           
+
+
+
 if __name__ == '__main__':
     main()
-    
-    
     
     
     
