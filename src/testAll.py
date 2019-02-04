@@ -34,7 +34,7 @@ def num_images(path):
         for name in files:
             lastPoint = name.rfind('.')     # index of last character '.'
             exstension = name[lastPoint : ]     # extension of file
-            if exstension == ".png" or exstension == "jpg" or exstension == ".jpeg":
+            if exstension == ".png" or exstension == ".jpg" or exstension == ".jpeg":
                 numberOfImages = numberOfImages + 1
     return numberOfImages
 
@@ -67,8 +67,8 @@ def predictionImage():
             resized_image = image.resize((28,28), Image.ANTIALIAS)
             
             # plot binarized image        
-            #plt.imshow(resized_image)
-            #plt.show()
+            plt.imshow(resized_image)
+            plt.show()
     
             # convert image to array
             x = img_to_array(resized_image)
