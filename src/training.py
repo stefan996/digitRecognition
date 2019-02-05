@@ -96,7 +96,7 @@ num_epoch = 10
 model_log = model.fit_generator(
             datagen.flow (X_train, y_train, batch_size = batch_size), 
             epochs = num_epoch,
-            steps_per_epoch = X_train.shape[0] / batch_size,
+            steps_per_epoch = X_train.shape[0] // batch_size,
             verbose = 1) 
 
 # save the model on Google Drive
