@@ -5,9 +5,8 @@ from pydrive.drive import GoogleDrive
 from google.colab import auth 
 from oauth2client.client import GoogleCredentials
 
-from keras.utils.np_utils import to_categorical # convert to one-hot-encoding
-
 # for define model
+from keras.datasets import mnist
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPool2D
 from keras.preprocessing.image import ImageDataGenerator
@@ -21,14 +20,14 @@ from keras.optimizers import Adadelta
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from keras.utils.np_utils import to_categorical 
 
 #load mnist dataset
-(X_train, y_train), (X_test, y_test) = mnist.load_data() #everytime 
+(X_train, y_train), (X_test, y_test) = mnist.load_data() 
 
 # image size in pixels
 img_rows = 28
 img_cols = 28
-
 
 # each image is (1 x 28 x 28), but the Conv2D layers expect channels_last (28 x 28 x 1)
 if keras.backend.image_data_format() == 'channels_first':
@@ -42,7 +41,7 @@ else:
     input_shape = (img_rows, img_cols, 1)
 
 
-#more reshaping
+# more reshaping
 X_train = X_train.astype('float32')
 X_test = X_test.astype('float32')
 X_train /= 255
@@ -60,14 +59,14 @@ y_test = keras.utils.to_categorical(y_test, num_category)
 # create model layer by layer
 model = Sequential()
 
-model.add(Conv2D(filters = 32, kernel_size = (5,5),padding = 'Same', activation ='relu', input_shape = (28, 28, 1)))
-model.add(Conv2D(filters = 32, kernel_size = (5,5),padding = 'Same', activation ='relu'))
-model.add(MaxPool2D(pool_size=(2,2)))   # iz matrice 2x2 izvlaci maksimalnu vrenodst
+model.add(Conv2D(filters = 32, kernel_size = (5, 5), padding = 'Same', activation = 'relu', input_shape = (28, 28, 1)))
+model.add(Conv2D(filters = 32, kernel_size = (5, 5), padding = 'Same', activation = 'relu'))
+model.add(MaxPool2D(pool_size=(2,2)))   
 model.add(Dropout(0.25))
 
-model.add(Conv2D(filters = 64, kernel_size = (3,3),padding = 'Same', activation ='relu'))
-model.add(Conv2D(filters = 64, kernel_size = (3,3),padding = 'Same', activation ='relu'))
-model.add(MaxPool2D(pool_size=(2,2), strides=(2,2)))
+model.add(Conv2D(filters = 64, kernel_size = (3, 3), padding = 'Same', activation = 'relu'))
+model.add(Conv2D(filters = 64, kernel_size = (3, 3), padding = 'Same', activation = 'relu'))
+model.add(MaxPool2D(pool_size = (2, 2), strides = (2, 2)))
 model.add(Dropout(0.25))
 
 model.add(Flatten())
@@ -76,9 +75,7 @@ model.add(Dropout(0.5))
 model.add(Dense(10, activation = "softmax"))
 
 # compile our model 
-model.compile(loss = keras.losses.categorical_crossentropy,
-              optimizer = Adadelta(),
-              metrics=['accuracy'])
+model.compile(loss = keras.losses.categorical_crossentropy, optimizer = Adadelta(), metrics=['accuracy'])
 
 # this metod write details of the model
 model.summary()
@@ -99,7 +96,7 @@ num_epoch = 10
 model_log = model.fit_generator(
             datagen.flow (X_train, y_train, batch_size = batch_size), 
             epochs = num_epoch,
-            steps_per_epoch = X_train.shape[0],
+            steps_per_epoch = X_train.shape[0] / batch_size,
             verbose = 1) 
 
 # save the model on Google Drive

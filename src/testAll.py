@@ -81,7 +81,6 @@ def predictionImage():
             probabilities = test_model.predict_proba(x)
             
             # write data on output
-            #print("Probabilities: " + str(probabilities))
             print("Number is: " + str(predictions) + "\n")
 
             # remove image from disc
